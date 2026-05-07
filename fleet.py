@@ -1,8 +1,6 @@
 import json
 from drone import Drone, DroneStatus
 from package import Package
-
-
 class Fleet:
     def __init__(self):
         self.drones = []
@@ -10,7 +8,7 @@ class Fleet:
 
     def add_drone(self, drone):
         for d in self.drones:
-            if d.id == drone.id:
+            if d.drone_id == drone.drone_id:
                 print("Drone ID already exists")
                 return
         self.drones.append(drone)

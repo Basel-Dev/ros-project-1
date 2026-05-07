@@ -5,18 +5,24 @@ grid_size = (100,100)
 obstacles = set()
 
 def add_horizontal_obstacle(x1, x2, y):
-    return [(x, y) for x in range(x1, x2 + 1)]
+    obstacles.update([(x, y) for x in range(x1, x2 + 1)])
 
 def add_vertical_obstacle(x, y1, y2):
-    return [(x, y) for y in range(y1, y2 + 1)]
+    obstacles.update([(x, y) for y in range(y1, y2 + 1)])
 
 def add_rectangle_obstacle(x1, x2, y1, y2):
-    return [(x, y) for x in range(x1, x2 + 1) for y in range(y1, y2 + 1)]
+    obstacles.update([(x, y) for x in range(x1, x2 + 1) for y in range(y1, y2 + 1)])
 
-obstacles.update(add_horizontal_obstacle(2, 5, 3))
-obstacles.update(add_rectangle_obstacle(4,6,3,4))
-obstacles.update(add_vertical_obstacle(1,2,5))
-obstacles.update(add_horizontal_obstacle(1,4,6))
+def clearObstacles():
+    obstacles.clear()
+
+def getObstacles():
+    return obstacles
+
+# obstacles.update(add_horizontal_obstacle(2, 5, 3))
+# obstacles.update(add_rectangle_obstacle(4,6,3,4))
+# obstacles.update(add_vertical_obstacle(1,2,5))
+# obstacles.update(add_horizontal_obstacle(1,4,6))
 
 
 

@@ -4,7 +4,7 @@ from package import Package
 from mission import start_trip
 from simulate_B import simulateDrone
 import pathFinding
-
+import subprocess
 
 fleet = Fleet()
 
@@ -14,9 +14,37 @@ fleet.load_data()
 # خريطة
 grid = []
 
+def getInputTillValid(passedInput, str=False, num=False):
+    x = None
+    if str:
+        while True:
+            x = input(passedInput)
+            if not len(x) > 0:
+                print("Invalid Input, Please Input a Valid ID")
+                continue;
+            else:
+                break
+    elif num:
+        while True:
+            x = input(passedInput)
+            if not len(x) > 0 or not x.isdigit():
+                print("Invalid Input, Please Input a valid number.")
+                continue;
+            else:
+                break
+    return x
+
+def getIfInRange(coordinate):
+    return coordinate > -10 and coordinate < 10
+    
+def clearTerminal():
+    subprocess.run("clear")        
+
+def pressEnterToContinue():
+    input("Press Enter to Continue ")
 
 while True:
-
+    clearTerminal()
     print("\n===== DRONE DELIVERY SYSTEM =====")
 
     print("1) Add Drone")
@@ -30,36 +58,47 @@ while True:
 
     choice = input("\nChoose an option: ")
 
+    clearTerminal()
     # =========================================
     # ADD DRONE
     # =========================================
     if choice == "1":
 
-        drone_id = input("Enter drone ID: ")
+        drone_id = getInputTillValid("Enter Drone ID: ", str=True)
         max_weight = float(
-            input("Enter max weight: ")
+            getInputTillValid("Enter max weight: ", num=True)
         )
 
         new_drone = Drone(
             drone_id,
             max_weight
         )
-
+        print("Drone Added.")
         fleet.add_drone(new_drone)
+        pressEnterToContinue()
+        
 
     # =========================================
     # ADD PACKAGE
     # =========================================
     elif choice == "2":
 
-        package_id = input("Enter package ID: ")
+        package_id = getInputTillValid("Enter Package ID: ", str=True)
 
-        weight = float(
-            input("Enter package weight: ")
-        )
-
-        x = int(input("Destination X: "))
-        y = int(input("Destination Y: "))
+        weight = getInputTillValid("Enter Package Weight: ", num=True)
+        
+        while True:
+            print("Range 10x10")
+            x = int(getInputTillValid("Destination X: ", num=True))
+            y = int(getInputTillValid("Destination Y: ", num=True))
+            if not getIfInRange(x) or not getIfInRange(y):
+                print("Destination is outside of range, please re-enter destination.")
+                continue
+            elif (x, y) in pathFinding.getObstacles() :
+                print("Destination is in obstacle")
+                continue
+            else:
+                break 
 
         new_package = Package(
             package_id,
@@ -68,6 +107,8 @@ while True:
         )
 
         fleet.add_package(new_package)
+        print("Package Added")
+        pressEnterToContinue()
 
     # =========================================
     # SHOW DRONES
@@ -82,6 +123,8 @@ while True:
 
             for drone in fleet.drones:
                 print(drone)
+        pressEnterToContinue()
+
 
     # =========================================
     # SHOW PACKAGES
@@ -96,59 +139,46 @@ while True:
 
             for package in fleet.packages:
                 print(package)
+        
+        pressEnterToContinue()
 
     # =========================================
     # RECHARGE ALL DRONES
     # =========================================
     elif choice == "5":
-
         fleet.recharge_all_drones()
+        pressEnterToContinue()
 
     # =========================================
     # ADD NO-FLY ZONE
     # =========================================
     elif choice == "6":
+        obstacle_type = getInputTillValid("Add or Remove? (a/r)", str=True)
 
-        obstacle_type = input(
-            "Horizontal or Vertical? (h/v): "
-        )
+        if obstacle_type.lower() == "a":
 
-        if obstacle_type == "h":
+            x1 = int(getInputTillValid("Start X: ", num=True))
+            y1 = int(getInputTillValid("Start Y: ", num=True))
+            x2 = int(getInputTillValid("End X: ", num=True))
+            y2 = int(getInputTillValid("End Y: ", num=True))
 
-            x1 = int(input("Start X: "))
-            x2 = int(input("End X: "))
-            y = int(input("Y position: "))
+            if getIfInRange(x1) and getIfInRange(x2) and getIfInRange(y1) and getIfInRange(y2):
+                pathFinding.add_rectangle_obstacle(x1,x2,y1,y2)
+                print("Obstacle added")
+            else:
+                print("Invalid Obstacles, points are outside range")
 
-            pathFinding.add_horizontal_obstacle(
-                x1,
-                x2,
-                y
-            )
-
-            print("Horizontal obstacle added")
-
-        elif obstacle_type == "v":
-
-            x = int(input("X position: "))
-            y1 = int(input("Start Y: "))
-            y2 = int(input("End Y: "))
-
-            pathFinding.add_vertical_obstacle(
-                x,
-                y1,
-                y2
-            )
-
-            print("Vertical obstacle added")
-
+        elif obstacle_type == "r":
+            pathFinding.clearObstacles()
+            print("Obstacles cleared")
         else:
-            print("Invalid obstacle type")
+            print("Invalid")
+        pressEnterToContinue()
 
     # =========================================
     # START SIMULATION
     # =========================================
     elif choice == "7":
-
         if not fleet.drones:
             print("No drones available")
 
@@ -163,7 +193,7 @@ while True:
                 print(f"{i}) {drone}")
 
             drone_index = int(
-                input("Choose drone index: ")
+                getInputTillValid("Choose drone index: ", str=True)
             )
 
             print("\n===== PACKAGES =====")
@@ -172,7 +202,7 @@ while True:
                 print(f"{i}) {package}")
 
             package_index = int(
-                input("Choose package index: ")
+                getInputTillValid("Choose package index: ", num=True)
             )
 
             drone = fleet.drones[drone_index]

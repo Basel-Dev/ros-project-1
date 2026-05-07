@@ -1,14 +1,9 @@
-from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import ListedColormap
 import pathFinding
-import mission
 from drone import Drone, DroneStatus
-from package import Package
-
-
 
 class UIDrone(Drone):
     def __init__(self, ax, drone_id, max_weight):
@@ -27,12 +22,13 @@ class Path:
     def getReversePath(self):
         return Path(self.goal, self.start)
 
+
 def drawPath(ax, path, placeMarker=True):
     xPoints = [x for [x, y] in path]
     yPoints = [y for [x, y] in path]
 
     (goalX, goalY) = path[-1]
-    ax.plot(xPoints, yPoints)
+    ax.plot(xPoints, yPoints, color="tab:blue")
     if placeMarker:
         ax.plot([goalX], [goalY], "g^", zorder=9)
 
@@ -44,15 +40,9 @@ def drawObstacleGrid(ax, cmap, obstacles):
         grid[49-y][x+50] = 1
 
     ax.imshow(grid, cmap=cmap, extent=[-50.5, 49.5, -50.5, 49.5])
-    
 
-# pathFinding.add_horizontal_obstacle(-5, 5, 1)
-# pathFinding.add_vertical_obstacle(5, -5, 5)
-# pathFinding.add_vertical_obstacle(-5, -5, 5)
 
-# drawObstacleGrid(pathFinding.obstacles)
-
-def interpolatePath(drone, state, package, path, subdivisionsPerPoint):
+def interpolatePath(drone, state, path, subdivisionsPerPoint):
     denseSampleArray = []
     interpolationArray = np.linspace(0, 1, subdivisionsPerPoint)
 
@@ -68,9 +58,9 @@ def interpolatePath(drone, state, package, path, subdivisionsPerPoint):
 
     return denseSampleArray
 
-def getFinalInterpolatedSequence(drone, package, path, subdivisionsPerPoint, totalTime, pauseTime):
-    firstRunArray = interpolatePath(drone, DroneStatus.DELIVERING, package, path, subdivisionsPerPoint)
-    returnBackArray = interpolatePath(drone, DroneStatus.RETURNING, package, path[::-1], subdivisionsPerPoint)
+def getFinalInterpolatedSequence(drone, path, subdivisionsPerPoint, totalTime, pauseTime):
+    firstRunArray = interpolatePath(drone, DroneStatus.DELIVERING, path, subdivisionsPerPoint)
+    returnBackArray = interpolatePath(drone, DroneStatus.RETURNING, path[::-1], subdivisionsPerPoint)
 
     interval = (totalTime * 1000) / (2 * len(firstRunArray))
     pauseFrames = int((pauseTime * 1000) / interval)
@@ -87,18 +77,13 @@ def executePathwalk(fig, ax, drone, package, path, totalTime, pauseTime):
     drawPath(ax, path[::-1], False)
     subdivisions = 10
     
-    sampleArray, interval = getFinalInterpolatedSequence(drone, package, path, subdivisions, totalTime, pauseTime)
+    sampleArray, interval = getFinalInterpolatedSequence(drone, path, subdivisions, totalTime, pauseTime)
     
     def animate(i, drone, sampleArray):
         marker, label = drone.point
         
         sample, battery, state = sampleArray[i]
         x, y = sample
-
-        ##print(f" Battery: {int(battery)} | Status: {state.name} ")
-
-        # ax.set_xlim(x - 10, x + 10)
-        # ax.set_ylim(y - 10, y + 10)
 
         marker.set_offsets([x, y])
         label.set_position((x, y-.4))
@@ -116,17 +101,15 @@ def executePathwalk(fig, ax, drone, package, path, totalTime, pauseTime):
 
 TIME_RUNNING = 4
 PAUSE_TIME = 0.2
-# exampleDrone = UIDrone("D1", (0,0))
-#examplePackage = Package("P1", 1, (2, 4))
-#newPath = Path((0,0), (2,4))
 
 def simulateDrone(drone, package, path):
-    fig, ax = plt.subplots(layout="constrained")
+    fig, ax = plt.subplots(layout="constrained", figsize=(8, 8))
+    manager = plt.get_current_fig_manager()
 
     limitNum = 10
     limitRange = [x for x in range(-limitNum, limitNum+1)]
 
-    cmap = ListedColormap([(0, 0, 0, 0), (1, 1, 0, 1)])
+    cmap = ListedColormap([(0, 0, 0, 0), (0.5, 0.5, 0.5, 1)])
 
     ax.grid()
     ax.set_aspect("equal")
@@ -134,6 +117,8 @@ def simulateDrone(drone, package, path):
     ax.set_ylim(-limitNum, limitNum)
     ax.set_xticks(limitRange)
     ax.set_yticks(limitRange)
+
+    manager.window.geometry("800x800+900+120")
 
     ax.scatter([0], [0], marker="*", c="#FFD700", s=100, zorder=9)
 
