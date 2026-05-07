@@ -38,7 +38,7 @@ def getIfInRange(coordinate):
     return coordinate > -10 and coordinate < 10
     
 def clearTerminal():
-    # subprocess.run("clear")    
+    subprocess.run("clear")    
     pass    
 
 def pressEnterToContinue():
@@ -221,6 +221,7 @@ while True:
                     package,
                     path
                 )
+        pressEnterToContinue()
     # =========================================
     # SHOW CHAMPIONS OF EFFICIENCY
     # =========================================
