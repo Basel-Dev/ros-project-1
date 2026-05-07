@@ -13,6 +13,7 @@ class Drone:
         self.max_weight = max_weight
         self.battery = 100
         self.position = (0, 0)
+        self.missions = 0
         self.status = DroneStatus.IDLE
 
     def set_status(self, status):

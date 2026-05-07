@@ -38,7 +38,8 @@ def getIfInRange(coordinate):
     return coordinate > -10 and coordinate < 10
     
 def clearTerminal():
-    subprocess.run("clear")        
+    # subprocess.run("clear")    
+    pass    
 
 def pressEnterToContinue():
     input("Press Enter to Continue ")
@@ -54,6 +55,7 @@ while True:
     print("5) Recharge All Drones")
     print("6) Add No-Fly Zone")
     print("7) Start Simulation")
+    print("8) Display Champions of Efficiency")
     print("0) Save and Exit")
 
     choice = input("\nChoose an option: ")
@@ -73,7 +75,6 @@ while True:
             drone_id,
             max_weight
         )
-        print("Drone Added.")
         fleet.add_drone(new_drone)
         pressEnterToContinue()
         
@@ -102,12 +103,11 @@ while True:
 
         new_package = Package(
             package_id,
-            weight,
+            float(weight),
             (x, y)
         )
 
         fleet.add_package(new_package)
-        print("Package Added")
         pressEnterToContinue()
 
     # =========================================
@@ -221,13 +221,23 @@ while True:
                     package,
                     path
                 )
+    # =========================================
+    # SHOW CHAMPIONS OF EFFICIENCY
+    # =========================================
+    elif choice == "8":
+        sortedDrones = sorted(fleet.drones, key= lambda d: d.missions, reverse=True)
+        print("TOP CHAMPIONS OF EFFICIENCY:")
+        for i, drone in enumerate(sortedDrones, 1):
+            print(f"{i}- {drone} | {drone.missions} Missions")
 
+        print()
+        pressEnterToContinue()
     # =========================================
     # EXIT
     # =========================================
     elif choice == "0":
 
-        fleet.save_data()
+        fleet.save_data(pathFinding.getObstacles())
 
         print("Data saved successfully")
         print("Exiting program...")

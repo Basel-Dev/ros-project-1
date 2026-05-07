@@ -16,10 +16,8 @@ def can_fly(drone, required_battery):
 def start_trip(drone, package, grid):  # اعملى رحله باستخدام الدرون و الشحنه و الخريطه
 
     # هات الطريق من مكان الدرون الحالى الى مكان التسليم
-    
-    print(package.destination)
+
     path = find_path(drone.position, package.destination)
-    print(path)
 
     # لو مفيش طريق
     if not path:
@@ -37,7 +35,7 @@ def start_trip(drone, package, grid):  # اعملى رحله باستخدام ا
 
     # لو البطارية مش كفاية
     if not can_fly(drone, total_battery):
-        print("Battery not enough")
+        print("Battery not enough or path is blocked.")
         return False
 
     # الدرون بدأ يتحرك
@@ -61,7 +59,8 @@ def start_trip(drone, package, grid):  # اعملى رحله باستخدام ا
 
     # الرجوع
     go_home(drone, grid)
-
+    drone.missions += 1
+    
     return path
 
 

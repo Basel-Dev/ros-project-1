@@ -1,6 +1,8 @@
 import json
 from drone import Drone, DroneStatus
 from package import Package
+import pathFinding
+
 class Fleet:
     def __init__(self):
         self.drones = []
@@ -12,6 +14,7 @@ class Fleet:
                 print("Drone ID already exists")
                 return
         self.drones.append(drone)
+        self.save_data(pathFinding.getObstacles())
         print("Drone added successfully")
 
     def add_package(self, package):
@@ -21,24 +24,28 @@ class Fleet:
                 return
             
         self.packages.append(package)
+        self.save_data(pathFinding.getObstacles())
         print("Package added successfully")
 
 
     def recharge_all_drones(self):
         for drone in self.drones:
             drone.battery = 100
+            drone.missions = 0
         self.save_data()
         print("All drones recharged successfully")
 
-    def save_data(self, filename="fleet.json"):
+    def save_data(self, obstacles=pathFinding.getObstacles(), filename="fleet.json"):
         data = {
+            "obstacles": list(obstacles),
             "drones": [
                 {
                     "id": d.drone_id,
                     "max_weight": d.max_weight,
                     "battery": d.battery,
                     "position": d.position,
-                    "status": d.status.value
+                    "status": d.status.value,
+                    "missions": d.missions
                 }
                 for d in self.drones
             ],
@@ -60,11 +67,16 @@ class Fleet:
             with open(filename, "r") as file:
                 data = json.load(file)
 
+            if data["obstacles"]:
+                pathFinding.obstacles.update([(x,y) for [x,y] in data["obstacles"]])
+            else:
+                pass
             for d in data["drones"]:
                 drone = Drone(d["id"], d["max_weight"])
                 drone.battery = d["battery"]
                 drone.position = tuple(d["position"])
                 drone.status = DroneStatus(d["status"])
+                drone.missions = int(d["missions"])
                 self.drones.append(drone)
 
             for p in data["packages"]:
